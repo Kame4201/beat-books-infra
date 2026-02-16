@@ -32,6 +32,48 @@ Predict NFL game outcomes, find edges against the sportsbook lines, and size bet
 
 ## Quick Start
 
+### Option 1: Docker (Recommended)
+
+Run the entire stack with Docker Compose:
+
+```bash
+# Clone all repos in the same parent directory
+git clone https://github.com/Kame4201/beat-books-data.git
+git clone https://github.com/Kame4201/beat-books-api.git
+git clone https://github.com/Kame4201/beat-books-infra.git
+
+# Set up environment
+cd beat-books-infra/docker
+cp .env.example .env
+# Edit .env and set DB_PASSWORD
+
+# Start the stack (production mode)
+cd ..
+./scripts/docker-up.sh
+
+# Or for development with hot reload
+./scripts/docker-up.sh dev
+
+# Or for testing
+./scripts/docker-up.sh test
+
+# Windows PowerShell
+.\scripts\docker-up.ps1 dev
+```
+
+**Services will be available at:**
+- API Gateway: http://localhost:8000
+- Data Service: http://localhost:8001
+- PostgreSQL: localhost:5432
+
+**To stop:**
+```bash
+cd docker
+docker-compose down -v  # -v removes volumes
+```
+
+### Option 2: Manual Setup
+
 ```bash
 # Clone all repos
 git clone https://github.com/Kame4201/beat-books-data.git

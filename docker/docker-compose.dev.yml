@@ -1,0 +1,37 @@
+# Development overrides for docker-compose.yml
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  data-service:
+    build:
+      context: ../beat-books-data
+      dockerfile: Dockerfile
+    volumes:
+      # Mount source code for hot reload
+      - ../beat-books-data/src:/app/src:ro
+    environment:
+      # Development settings
+      DEBUG: "true"
+      LOG_LEVEL: DEBUG
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8001 --reload
+
+  api:
+    build:
+      context: ../beat-books-api
+      dockerfile: Dockerfile
+    volumes:
+      # Mount source code for hot reload
+      - ../beat-books-api/src:/app/src:ro
+    environment:
+      # Development settings
+      DEBUG: "true"
+      LOG_LEVEL: DEBUG
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  postgres:
+    # Expose postgres logs for debugging
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    # Add pgAdmin for database management (optional)
+    ports:
+      - "5432:5432"

@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: beatthebooks
+      POSTGRES_USER: btb
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  data-service:
+    build: ../beat-books-data
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: postgresql://btb:${DB_PASSWORD}@postgres:5432/beatthebooks
+    depends_on:
+      - postgres
+
+  api:
+    build: ../beat-books-api
+    ports:
+      - "8000:8000"
+    environment:
+      DATA_SERVICE_URL: http://data-service:8001
+    depends_on:
+      - data-service
+
+volumes:
+  pgdata:
