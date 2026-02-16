@@ -1,0 +1,108 @@
+# pytest configuration template for BeatTheBooks repos
+#
+# Copy the [tool.pytest.ini_options] section into your repo's pyproject.toml
+# Adjust coverage thresholds and markers as needed per repo.
+
+[tool.pytest.ini_options]
+# Test discovery
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+# Markers - organize tests by type (70/20/10 pyramid)
+markers = [
+    "unit: Unit tests (70%) - single function, mocked dependencies, fast",
+    "integration: Integration tests (20%) - service → repository → test DB",
+    "e2e: End-to-end tests (10%) - full API request/response via TestClient",
+    "slow: Tests that take > 1 second to run",
+    "smoke: Critical path smoke tests run on every commit",
+]
+
+# Output formatting
+addopts = [
+    "-ra",                          # Show summary of all test outcomes
+    "--strict-markers",             # Error on unknown markers
+    "--strict-config",              # Error on unknown config options
+    "--showlocals",                 # Show local variables in tracebacks
+    "-v",                           # Verbose output
+    "--tb=short",                   # Shorter traceback format
+    "--color=yes",                  # Colored output
+]
+
+# Filtering
+filterwarnings = [
+    "error",                                    # Treat warnings as errors
+    "ignore::DeprecationWarning",               # Ignore deprecation warnings from dependencies
+    "ignore::PendingDeprecationWarning",
+    "ignore::UserWarning",
+]
+
+# Logging
+log_cli = false                     # Don't show logs by default
+log_cli_level = "INFO"              # When enabled, show INFO and above
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+
+# Coverage settings (adjust per repo)
+[tool.coverage.run]
+source = ["src"]                    # Measure coverage for src/ directory
+omit = [
+    "*/tests/*",                    # Don't measure test coverage
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/migrations/*",               # Skip database migration files
+    "*/__init__.py",                # Skip __init__ files
+]
+branch = true                       # Measure branch coverage
+
+[tool.coverage.report]
+precision = 2                       # Show 2 decimal places
+show_missing = true                 # Show line numbers of missing coverage
+skip_covered = false                # Show all files, even 100% covered
+
+# Coverage thresholds by repo (fail build if below threshold)
+# Adjust these based on the repo:
+#
+# beat-books-data:
+#   fail_under = 70
+#   Critical paths (services/): 80%
+#
+# beat-books-model:
+#   fail_under = 70
+#   Critical paths (features/): 90%
+#
+# beat-books-api:
+#   fail_under = 60
+#   Critical paths (routes/): 80%
+
+fail_under = 70.0                   # Default threshold
+
+exclude_lines = [
+    "pragma: no cover",             # Explicit exclusion
+    "def __repr__",                 # Debug methods
+    "def __str__",
+    "raise AssertionError",         # Defensive programming
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",   # Script entry points
+    "if TYPE_CHECKING:",            # Type checking blocks
+    "class .*\\bProtocol\\):",      # Protocol classes
+    "@(abc\\.)?abstractmethod",     # Abstract methods
+]
+
+[tool.coverage.html]
+directory = "htmlcov"               # HTML report output directory
+
+[tool.coverage.xml]
+output = "coverage.xml"             # XML report for CI/CD
+
+# Example: Run specific test types
+# pytest -m unit                    # Run only unit tests
+# pytest -m "not slow"              # Skip slow tests
+# pytest -m "unit or integration"   # Run unit and integration
+# pytest tests/test_unit/           # Run all tests in directory
+#
+# Coverage commands:
+# pytest --cov=src --cov-report=html --cov-report=term
+# pytest --cov=src --cov-fail-under=70
+# pytest --cov=src --cov-report=xml    # For CI/CD coverage reporting
