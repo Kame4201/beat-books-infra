@@ -63,6 +63,12 @@ Python 3.11+ · FastAPI · SQLAlchemy · PostgreSQL (Neon.tech) · Alembic · sc
 - **Phase 3 (Production)**: Scraper resilience, Kelly Criterion, CI/CD, config management
 - **Phase 4 (Scale)**: Injury/weather data, batch scraping, Docker deployment
 
+## Project Management
+
+**Project Board:** [BeatTheBooks Roadmap](https://github.com/users/Kame4201/projects/1) *(Update with your actual project URL)*
+
+Track all issues across the 4 repositories in a single board with phase-based organization. See [docs/github-projects-setup.md](docs/github-projects-setup.md) for setup instructions.
+
 ## Documentation
 
 See the [docs/](docs/) folder for detailed architecture, SDLC, and agent documentation.
