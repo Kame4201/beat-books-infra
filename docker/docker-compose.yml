@@ -9,6 +9,11 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U btb -d beatthebooks"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   data-service:
     build: ../beat-books-data
@@ -16,8 +21,29 @@ services:
       - "8001:8001"
     environment:
       DATABASE_URL: postgresql://btb:${DB_PASSWORD}@postgres:5432/beatthebooks
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+
+  model-service:
+    build: ../beat-books-model
+    ports:
+      - "8002:8002"
+    environment:
+      DATABASE_URL: postgresql://btb:${DB_PASSWORD}@postgres:5432/beatthebooks
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   api:
     build: ../beat-books-api
@@ -25,8 +51,17 @@ services:
       - "8000:8000"
     environment:
       DATA_SERVICE_URL: http://data-service:8001
+      MODEL_SERVICE_URL: http://model-service:8002
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     depends_on:
-      - data-service
+      data-service:
+        condition: service_healthy
+      model-service:
+        condition: service_healthy
 
 volumes:
   pgdata:
