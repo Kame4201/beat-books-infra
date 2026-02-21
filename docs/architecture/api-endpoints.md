@@ -8,8 +8,8 @@ All public endpoints are served through `beat-books-api` (port 8000), which dele
 
 ### Health Check
 ~~~
-GET /
-Response: {"status": "ok", "service": "beat-books-data"}
+GET /health
+Response: {"status": "healthy", "service": "beat-books-data", "version": "0.1.0"}
 ~~~
 
 ### Scraping
@@ -39,21 +39,59 @@ Response: Batch scraping results
 Note: 60-second delay between requests (configurable via SCRAPE_DELAY_SECONDS)
 ~~~
 
+## Current Endpoints (beat-books-model, port 8002)
+
+### Health Check
+~~~
+GET /health
+Response: {"status": "healthy", "service": "beat-books-model", "version": "0.1.0"}
+~~~
+
+### Predict Game Outcome
+~~~
+POST /predictions/predict
+Body:
+  {
+    "home_team": "chiefs",
+    "away_team": "eagles",
+    "season": 2024,
+    "week": 10
+  }
+Response:
+  {
+    "home_team": "chiefs",
+    "away_team": "eagles",
+    "prediction": {
+      "winner": "chiefs",
+      "win_probability": 0.62,
+      "predicted_spread": -3.5,
+      "confidence": "medium"
+    },
+    "model_version": "0.1.0"
+  }
+~~~
+
+### Model Info
+~~~
+GET /model/info
+Response:
+  {
+    "model_type": "XGBoost",
+    "model_version": "0.1.0",
+    "features_used": 42,
+    "training_date": "2024-11-01",
+    "accuracy": 0.58
+  }
+~~~
+
 ## Planned Endpoints
 
 ### Data Retrieval (Phase 1)
 
 ~~~
 GET /teams/{team}/stats?season=2024
-GET /players?season=2024&position=QB&page=1&limit=50
 GET /games?season=2024&week=1
 GET /standings?season=2024
-~~~
-
-### Predictions (Phase 2)
-
-~~~
-GET /predictions/predict?team1=chiefs&team2=eagles
 ~~~
 
 ### Odds (Phase 2)
@@ -78,12 +116,14 @@ GET /odds?season=2024&week=1
 ~~~
 
 ### Error
+
+> See [service-contracts.md](service-contracts.md) for the full error standard.
+
 ~~~json
 {
-  "error": {
-    "code": "NOT_FOUND",
-    "message": "No stats found for team 'invalidteam' in season 2024"
-  }
+  "error": "NOT_FOUND",
+  "detail": "No stats found for team 'invalidteam' in season 2024",
+  "status_code": 404
 }
 ~~~
 
