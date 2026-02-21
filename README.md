@@ -39,6 +39,7 @@ Run the entire stack with Docker Compose:
 ```bash
 # Clone all repos in the same parent directory
 git clone https://github.com/Kame4201/beat-books-data.git
+git clone https://github.com/Kame4201/beat-books-model.git
 git clone https://github.com/Kame4201/beat-books-api.git
 git clone https://github.com/Kame4201/beat-books-infra.git
 
@@ -64,7 +65,15 @@ cd ..
 **Services will be available at:**
 - API Gateway: http://localhost:8000
 - Data Service: http://localhost:8001
+- Model Service: http://localhost:8002
 - PostgreSQL: localhost:5432
+
+**Health checks:**
+```bash
+curl http://localhost:8000/health  # API gateway
+curl http://localhost:8001/health  # Data service
+curl http://localhost:8002/health  # Model service
+```
 
 **To stop:**
 ```bash
@@ -87,10 +96,16 @@ pip install -r requirements.txt
 cp .env.example .env  # Add your DATABASE_URL
 uvicorn src.main:app --reload --port 8001
 
+# Then beat-books-model
+cd ../beat-books-model
+pip install -r requirements.txt
+cp .env.example .env  # Add your DATABASE_URL
+uvicorn src.main:app --reload --port 8002
+
 # Then beat-books-api
 cd ../beat-books-api
 pip install -r requirements.txt
-cp .env.example .env
+cp .env.example .env  # Add DATA_SERVICE_URL and MODEL_SERVICE_URL
 uvicorn src.main:app --reload --port 8000
 ```
 
