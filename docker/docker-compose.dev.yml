@@ -4,11 +4,11 @@
 services:
   data-service:
     build:
-      context: ../beat-books-data
+      context: ../../beat-books-data
       dockerfile: Dockerfile
     volumes:
       # Mount source code for hot reload
-      - ../beat-books-data/src:/app/src:ro
+      - ../../beat-books-data/src:/app/src:ro
     environment:
       # Development settings
       DEBUG: "true"
@@ -17,12 +17,12 @@ services:
 
   model-service:
     build:
-      context: ../beat-books-model
+      context: ../../beat-books-model
       dockerfile: Dockerfile
     volumes:
       # Mount source code for hot reload
-      - ../beat-books-model/src:/app/src:ro
-      - ../beat-books-model/model_artifacts:/app/model_artifacts:ro
+      - ../../beat-books-model/src:/app/src:ro
+      - ../../beat-books-model/model_artifacts:/app/model_artifacts:ro
     environment:
       # Development settings
       DEBUG: "true"
@@ -31,11 +31,11 @@ services:
 
   api:
     build:
-      context: ../beat-books-api
+      context: ../../beat-books-api
       dockerfile: Dockerfile
     volumes:
       # Mount source code for hot reload
-      - ../beat-books-api/src:/app/src:ro
+      - ../../beat-books-api/src:/app/src:ro
     environment:
       # Development settings
       DEBUG: "true"

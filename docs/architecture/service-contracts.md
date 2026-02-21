@@ -239,7 +239,7 @@ All services must declare health checks so `depends_on` can use `condition: serv
 
 ```yaml
 data-service:
-  build: ../beat-books-data
+  build: ../../beat-books-data
   ports:
     - "8001:8001"
   environment:
@@ -254,7 +254,7 @@ data-service:
       condition: service_healthy
 
 model-service:
-  build: ../beat-books-model
+  build: ../../beat-books-model
   ports:
     - "8002:8002"
   environment:
@@ -269,7 +269,7 @@ model-service:
       condition: service_healthy
 
 api:
-  build: ../beat-books-api
+  build: ../../beat-books-api
   ports:
     - "8000:8000"
   environment:
