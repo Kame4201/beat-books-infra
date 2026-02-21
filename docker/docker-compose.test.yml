@@ -20,9 +20,16 @@ services:
       TESTING: "true"
     command: pytest tests/ -v
 
+  model-service:
+    environment:
+      DATABASE_URL: postgresql://btb_test:${TEST_DB_PASSWORD:-test_password}@postgres:5432/beatthebooks_test
+      TESTING: "true"
+    command: pytest tests/ -v
+
   api:
     environment:
       DATA_SERVICE_URL: http://data-service:8001
+      MODEL_SERVICE_URL: http://model-service:8002
       TESTING: "true"
     command: pytest tests/ -v
 
