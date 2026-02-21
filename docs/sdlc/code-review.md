@@ -22,7 +22,14 @@
 - [ ] Coverage maintained or improved
 
 ### Security
-- [ ] No secrets in code
+
+> Full strategy: [Secret Management](../operations/secret-management.md)
+
+- [ ] No secrets in code (no hardcoded passwords, API keys, or connection strings)
+- [ ] Secrets loaded via `pydantic-settings` `Settings` class, not `os.getenv()` directly
+- [ ] New secrets added to `templates/.env.example` with a descriptive comment
+- [ ] New secrets added to the [Secret Inventory](../operations/secret-management.md#secret-inventory) table
+- [ ] `.env` is in `.gitignore`
 - [ ] SQL injection prevented (parameterized queries via SQLAlchemy)
 - [ ] Rate limiting respected
 
