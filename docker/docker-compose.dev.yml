@@ -15,6 +15,20 @@ services:
       LOG_LEVEL: DEBUG
     command: uvicorn src.main:app --host 0.0.0.0 --port 8001 --reload
 
+  model-service:
+    build:
+      context: ../beat-books-model
+      dockerfile: Dockerfile
+    volumes:
+      # Mount source code for hot reload
+      - ../beat-books-model/src:/app/src:ro
+      - ../beat-books-model/model_artifacts:/app/model_artifacts:ro
+    environment:
+      # Development settings
+      DEBUG: "true"
+      LOG_LEVEL: DEBUG
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8002 --reload
+
   api:
     build:
       context: ../beat-books-api
