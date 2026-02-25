@@ -1,0 +1,42 @@
+name: Reusable Full CI Pipeline
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        type: string
+        default: "3.11"
+      source-dir:
+        type: string
+        default: "src/"
+      coverage-threshold:
+        type: number
+        default: 70
+
+jobs:
+  lint:
+    uses: Kame4201/beat-books-infra/.github/workflows/reusable-lint.yml@main
+    with:
+      python-version: ${{ inputs.python-version }}
+      source-dir: ${{ inputs.source-dir }}
+
+  type-check:
+    uses: Kame4201/beat-books-infra/.github/workflows/reusable-type-check.yml@main
+    with:
+      python-version: ${{ inputs.python-version }}
+      source-dir: ${{ inputs.source-dir }}
+
+  test:
+    needs: [lint]
+    uses: Kame4201/beat-books-infra/.github/workflows/reusable-test.yml@main
+    with:
+      python-version: ${{ inputs.python-version }}
+      source-dir: ${{ inputs.source-dir }}
+      coverage-threshold: ${{ inputs.coverage-threshold }}
+
+  security:
+    needs: [lint]
+    uses: Kame4201/beat-books-infra/.github/workflows/reusable-security.yml@main
+    with:
+      python-version: ${{ inputs.python-version }}
+      source-dir: ${{ inputs.source-dir }}
