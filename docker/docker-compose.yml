@@ -21,6 +21,7 @@ services:
       - "8001:8001"
     environment:
       DATABASE_URL: postgresql://btb:${DB_PASSWORD}@postgres:5432/beatthebooks
+      SCRAPE_BACKEND: ${SCRAPE_BACKEND:-scrapling}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 10s
@@ -36,6 +37,10 @@ services:
       - "8002:8002"
     environment:
       DATABASE_URL: postgresql://btb:${DB_PASSWORD}@postgres:5432/beatthebooks
+      MODEL_ARTIFACTS_PATH: /app/model_artifacts
+      MODEL_ID: ${MODEL_ID:-}
+    volumes:
+      - ../../beat-books-model/model_artifacts:/app/model_artifacts
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
       interval: 10s

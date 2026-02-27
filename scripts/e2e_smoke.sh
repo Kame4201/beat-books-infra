@@ -222,16 +222,34 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Step 5: Predict (trigger prediction via model service directly)
+# Step 5: Train model artifact (if not already present)
 # ---------------------------------------------------------------------------
 echo ""
-echo "Step 5: Predict"
+echo "Step 5: Train model artifact"
+echo "  Training baseline model inside model-service container..."
+
+TRAIN_OUTPUT=$(cd "$COMPOSE_DIR" && docker compose -f docker-compose.yml exec -T model-service \
+  python3 scripts/train_baseline.py --synthetic 2>&1 || echo "TRAIN_FAILED")
+
+if echo "$TRAIN_OUTPUT" | grep -q "Model ID:"; then
+  TRAINED_MODEL_ID=$(echo "$TRAIN_OUTPUT" | grep "Model ID:" | tail -1 | awk '{print $NF}')
+  pass "Model trained successfully (ID: $TRAINED_MODEL_ID)"
+else
+  echo "  Train output: $(echo "$TRAIN_OUTPUT" | tail -5)"
+  fail "Model training failed"
+fi
+
+# ---------------------------------------------------------------------------
+# Step 6: Predict (trigger prediction via model service directly)
+# ---------------------------------------------------------------------------
+echo ""
+echo "Step 6: Predict"
 echo "  Triggering prediction via model service..."
 
 PREDICT_BODY=$(curl -s -o /tmp/e2e_body -w "%{http_code}" --max-time 15 \
   -X POST "$BASE_URL:8002/predictions/predict" \
   -H "Content-Type: application/json" \
-  -d '{"home_team": "KC", "away_team": "BUF"}' 2>/dev/null || echo "000")
+  -d '{"home_team": "KC", "away_team": "BUF", "season": 2024, "week": 1}' 2>/dev/null || echo "000")
 HTTP_CODE="$PREDICT_BODY"
 PREDICT_BODY=$(cat /tmp/e2e_body 2>/dev/null || echo "")
 
@@ -248,6 +266,13 @@ if [ "$HTTP_CODE" = "200" ]; then
     echo "  Prediction body: $(echo "$PREDICT_BODY" | head -c 300)"
     fail "Prediction response missing 'winner' field"
   fi
+  # Verify non-stub probability (not hardcoded 0.50)
+  win_prob=$(echo "$PREDICT_BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('prediction',{}).get('win_probability',0.5))" 2>/dev/null || echo "0.5")
+  if [ "$win_prob" != "0.5" ] && [ "$win_prob" != "0.50" ]; then
+    pass "Prediction is non-stub (win_probability=$win_prob)"
+  else
+    fail "Prediction appears to be stub (win_probability=$win_prob)"
+  fi
 elif [ "$HTTP_CODE" = "422" ]; then
   # Try GET-style via API gateway instead
   echo "  POST returned 422, trying via API gateway GET..."
@@ -263,10 +288,10 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Step 6: End-to-end via API gateway
+# Step 7: End-to-end via API gateway
 # ---------------------------------------------------------------------------
 echo ""
-echo "Step 6: End-to-end via API Gateway"
+echo "Step 7: End-to-end via API Gateway"
 
 # Test API gateway proxying to data service
 GATEWAY_STATS=$(http_get "$BASE_URL:8000/teams/KC/stats?season=2023")
