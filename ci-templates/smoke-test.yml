@@ -1,0 +1,81 @@
+name: Cross-Service Smoke Test
+
+# This workflow starts the full Docker Compose stack and runs smoke tests.
+# It should be triggered manually or on schedule from the infra repo.
+# Requires all 4 repos to be checked out as siblings.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run nightly at 6 AM UTC
+    - cron: '0 6 * * *'
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout infra repo
+        uses: actions/checkout@v4
+        with:
+          repository: Kame4201/beat-books-infra
+          path: beat-books-infra
+
+      - name: Checkout data repo
+        uses: actions/checkout@v4
+        with:
+          repository: Kame4201/beat-books-data
+          path: beat-books-data
+
+      - name: Checkout model repo
+        uses: actions/checkout@v4
+        with:
+          repository: Kame4201/beat-books-model
+          path: beat-books-model
+
+      - name: Checkout api repo
+        uses: actions/checkout@v4
+        with:
+          repository: Kame4201/beat-books-api
+          path: beat-books-api
+
+      - name: Create .env file
+        run: cp beat-books-infra/docker/.env.example beat-books-infra/docker/.env
+
+      - name: Start full stack
+        working-directory: beat-books-infra/docker
+        run: docker compose -f docker-compose.yml up --build -d
+
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting for services..."
+          for i in $(seq 1 24); do
+            ALL_HEALTHY=true
+            for PORT in 8000 8001 8002; do
+              if ! curl -sf "http://localhost:$PORT/health" > /dev/null 2>&1; then
+                ALL_HEALTHY=false
+              fi
+            done
+            if [ "$ALL_HEALTHY" = true ]; then
+              echo "All services healthy after $((i * 5))s"
+              break
+            fi
+            if [ "$i" -eq 24 ]; then
+              echo "Timeout waiting for services"
+              docker compose -f beat-books-infra/docker/docker-compose.yml logs
+              exit 1
+            fi
+            sleep 5
+          done
+
+      - name: Run smoke tests
+        run: bash beat-books-infra/scripts/smoke-test.sh http://localhost
+
+      - name: Collect logs on failure
+        if: failure()
+        working-directory: beat-books-infra/docker
+        run: docker compose -f docker-compose.yml logs --tail=50
+
+      - name: Tear down
+        if: always()
+        working-directory: beat-books-infra/docker
+        run: docker compose -f docker-compose.yml down -v

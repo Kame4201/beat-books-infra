@@ -21,6 +21,11 @@ services:
       - "8001:8001"
     environment:
       DATABASE_URL: postgresql://btb:${DB_PASSWORD}@postgres:5432/beatthebooks
+      SCRAPE_BACKEND: scrapling
+      SCRAPE_DELAY_SECONDS: 5
+      SCRAPE_REQUEST_TIMEOUT: 30
+      SCRAPE_MAX_RETRIES: 3
+      SCRAPE_RETRY_DELAYS: "[30, 60, 120]"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 10s
@@ -36,6 +41,10 @@ services:
       - "8002:8002"
     environment:
       DATABASE_URL: postgresql://btb:${DB_PASSWORD}@postgres:5432/beatthebooks
+      MODEL_ARTIFACTS_PATH: /app/model_artifacts
+      MODEL_ID: ${MODEL_ID:-}
+    volumes:
+      - ../../beat-books-model/model_artifacts:/app/model_artifacts
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
       interval: 10s
@@ -52,6 +61,9 @@ services:
     environment:
       DATA_SERVICE_URL: http://data-service:8001
       MODEL_SERVICE_URL: http://model-service:8002
+      TEAM_ALIASES_PATH: /app/resources/team_aliases.json
+    volumes:
+      - ./resources/team_aliases.json:/app/resources/team_aliases.json:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
