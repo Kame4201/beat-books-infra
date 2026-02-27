@@ -39,6 +39,7 @@ services:
     environment:
       DATABASE_URL: postgresql://btb:${DB_PASSWORD}@postgres:5432/beatthebooks
       MODEL_ARTIFACTS_PATH: /app/model_artifacts
+      MODEL_ID: ${MODEL_ID:-}
     volumes:
       - ../../beat-books-model/model_artifacts:/app/model_artifacts
     healthcheck:
