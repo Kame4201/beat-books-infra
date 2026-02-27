@@ -21,7 +21,8 @@ services:
       - "8001:8001"
     environment:
       DATABASE_URL: postgresql://btb:${DB_PASSWORD}@postgres:5432/beatthebooks
-      SCRAPE_BACKEND: ${SCRAPE_BACKEND:-scrapling}
+      SCRAPE_BACKEND: scrapling
+      SCRAPE_DELAY_SECONDS: 5
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 10s
